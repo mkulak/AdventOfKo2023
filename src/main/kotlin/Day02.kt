@@ -7,35 +7,32 @@ fun main() {
 }
 
 private fun part1(input: List<String>): Int = input.mapIndexed { i, line ->
-    val tries = line.drop(line.indexOf(":") + 1).split(";").map { sub ->
-        val balls = IntArray(3)
-        sub.split(",").map { part ->
-            val spacePos = part.indexOf(" ", 1)
-            val index = when (part[spacePos + 1]) {
-                'r' -> 0
-                'g' -> 1
-                else -> 2
-            }
-            balls[index] = part.substring(1, spacePos).toInt()
-        }
-        balls
-    }
-    if (tries.all { it[0] < 13 && it[1] < 14 && it[2] < 15 }) (i + 1) else 0
+    if (parseRounds(line).all { (r, g, b) -> r < 13 && g < 14 && b < 15 }) (i + 1) else 0
 }.sum()
 
 private fun part2(input: List<String>): Int = input.sumOf { line ->
     val balls = IntArray(3)
-    line.drop(line.indexOf(":") + 1).split(";").map { sub ->
-        sub.split(",").map { part ->
-            val spacePos = part.indexOf(" ", 1)
-            val value = part.substring(1, spacePos).toInt()
-            val index = when (part[spacePos + 1]) {
-                'r' -> 0
-                'g' -> 1
-                else -> 2
-            }
-            balls[index] = max(balls[index], value)
-        }
+    parseRounds(line).forEach { (r, g, b) ->
+        balls[0] = max(balls[0], r)
+        balls[1] = max(balls[1], g)
+        balls[2] = max(balls[2], b)
     }
     balls[0] * balls[1] * balls[2]
+}
+
+private fun parseRounds(line: String): List<IntArray> = line.drop(line.indexOf(":") + 1).split(";").map(::parseRound)
+
+private fun parseRound(round: String): IntArray {
+    val balls = IntArray(3)
+    round.split(",").forEach { part ->
+        val (value, color) = part.drop(1).split(" ")
+        balls[color2index(color)] = value.toInt()
+    }
+    return balls
+}
+
+private fun color2index(color: String): Int = when (color) {
+    "red" -> 0
+    "green" -> 1
+    else -> 2
 }
