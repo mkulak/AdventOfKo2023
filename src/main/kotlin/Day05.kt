@@ -1,5 +1,3 @@
-import kotlin.math.min
-
 fun main() {
     val input = readInputAsText("Day05")
     println(part1(input))
@@ -35,7 +33,7 @@ fun Layer.split(interval: Interval): List<Interval> {
             res += cur.copy(end = overlap.start)
             cur.copy(start = overlap.start)
         } else {
-            val end = min(overlap.end, cur.end)
+            val end = overlap.end.coerceAtMost(cur.end)
             res += Interval(cur.start + overlap.offset, end + overlap.offset, overlap.offset)
             cur.copy(start = end)
         }
