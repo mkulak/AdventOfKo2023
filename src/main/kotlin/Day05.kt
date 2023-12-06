@@ -1,4 +1,3 @@
-import java.util.TreeSet
 import kotlin.math.min
 
 fun main() {
@@ -21,55 +20,39 @@ private fun part2(input: String): Long {
     return solve(seeds, parseLayers(sections))
 }
 
-private fun solve(seeds: List<Interval>, layers: List<IntervalTree>) =
-    layers.fold(seeds) { cur, layer ->
-        cur.flatMap { interval ->
-            splitRange(interval, layer)
-        }
-    }.minOf { it.start }
+private fun solve(seeds: List<Interval>, layers: List<Layer>) =
+    layers.fold(seeds) { intervals, layer -> intervals.flatMap(layer::split) }.minOf { it.start }
 
-fun splitRange(interval: Interval, layer: IntervalTree): List<Interval> {
+fun Layer.split(interval: Interval): List<Interval> {
     val res = ArrayList<Interval>()
     var cur = interval.copy(offset = 0)
     while (cur.start < cur.end) {
-        val overlap = layer.findLeftmostOverlap(cur)
+        val overlap = find { it.start in cur || cur.start in it }
         cur = if (overlap == null) {
             res += cur
             cur.copy(start = interval.end)
-        } else if (overlap.start <= cur.start) {
+        } else if (overlap > cur) {
+            res += cur.copy(end = overlap.start)
+            cur.copy(start = overlap.start)
+        } else {
             val end = min(overlap.end, cur.end)
             res += Interval(cur.start + overlap.offset, end + overlap.offset, overlap.offset)
             cur.copy(start = end)
-        } else {
-            res += cur.copy(end = overlap.start)
-            cur.copy(start = overlap.start)
         }
     }
     return res
 }
 
-private fun parseLayers(sections: List<String>) = sections.drop(1).map { section ->
-    section.lines().drop(1).fold(IntervalTree()) { tree, line ->
+private fun parseLayers(sections: List<String>): List<Layer> = sections.drop(1).map { section ->
+    section.lines().drop(1).map { line ->
         val (dst, src, size) = line.split(" ").map { it.toLong() }
-        tree.add(Interval(src, src + size, dst - src))
-        tree
-    }
-}
-
-fun IntervalTree.findLeftmostOverlap(interval: Interval): Interval? {
-    val left = floor(interval)
-    if (left != null && interval.start < left.end) {
-        return left
-    }
-    val right = ceiling(interval)
-    if (right != null && interval.end > right.start) {
-        return right
-    }
-    return null
+        Interval(src, src + size, dst - src)
+    }.sorted()
 }
 
 data class Interval(val start: Long, val end: Long, val offset: Long) : Comparable<Interval> {
     override fun compareTo(other: Interval): Int = start.compareTo(other.start)
+    operator fun contains(value: Long): Boolean = value in start..<end
 }
 
-typealias IntervalTree = TreeSet<Interval>
+typealias Layer = List<Interval>
