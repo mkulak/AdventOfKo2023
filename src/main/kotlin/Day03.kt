@@ -48,6 +48,7 @@ private fun part2(input: List<String>): Int {
         gears.clear()
         acc = 0
     }
+
     fun addGears(i: Int, j: Int) {
         for (y in (i - 1)..(i + 1)) {
             for (x in (j - 1)..(j + 1)) {

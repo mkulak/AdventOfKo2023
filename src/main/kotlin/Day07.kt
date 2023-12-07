@@ -1,5 +1,3 @@
-import java.util.Comparator
-
 fun main() {
     val input = readInput("Day07")
     println(part1(input))
