@@ -6,29 +6,22 @@ fun main() {
     println(part2(input))
 }
 
-private fun part1(input: List<String>): Int {
-    fun calculateStrength(hand: String): Int =
-        hand.fold(0) { acc, ch -> acc * 14 + "23456789TJQKA".indexOf(ch) }
+private fun part1(input: List<String>): Int =
+    solve(input, compareBy(::calculateType).thenComparing("23456789TJQKA"::calculateStrength))
 
-    val comparator = compareBy(::calculateType).thenComparing(::calculateStrength)
-    return solve(input, comparator)
-}
+private fun part2(input: List<String>): Int =
+    solve(input, compareBy(::calculateType2).thenComparing("J23456789TQKA"::calculateStrength))
 
-private fun part2(input: List<String>): Int {
-    fun calculateType2(hand: String): Int =
-        "23456789TQKA".maxOf { calculateType(hand.replace("J", "$it")) }
+private val types = listOf(listOf(1, 1, 1, 2), listOf(1, 2, 2), listOf(1, 1, 3), listOf(2, 3), listOf(1, 4), listOf(5))
 
-    fun calculateStrength2(hand: String): Int =
-        hand.fold(0) { acc, ch -> acc * 14 + "J23456789TQKA".indexOf(ch) }
-
-    val comparator = compareBy(::calculateType2).thenComparing(::calculateStrength2)
-    return solve(input, comparator)
-}
-
-val types = listOf(listOf(1, 1, 1, 2), listOf(1, 2, 2), listOf(1, 1, 3), listOf(2, 3), listOf(1, 4), listOf(5))
-
-fun calculateType(hand: String): Int =
+private fun calculateType(hand: String): Int =
     types.indexOf(hand.groupBy { it }.values.map { it.size }.sorted())
+
+private fun calculateType2(hand: String): Int =
+    "23456789TQKA".maxOf { calculateType(hand.replace("J", "$it")) }
+
+private fun String.calculateStrength(hand: String): Int =
+    hand.fold(0) { acc, ch -> acc * 14 + indexOf(ch) }
 
 private fun solve(input: List<String>, cmp: Comparator<String>) =
     input.map(::parseHand)
@@ -37,5 +30,3 @@ private fun solve(input: List<String>, cmp: Comparator<String>) =
         .sum()
 
 private fun parseHand(line: String) = line.split(" ").let { (hand, bid) -> hand to bid.trim().toInt() }
-
-
