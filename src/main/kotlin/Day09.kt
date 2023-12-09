@@ -5,26 +5,18 @@ fun main() {
 }
 
 private fun part1(input: List<String>): Long = input.sumOf { line ->
-    val values = line.split(" ").map { it.toInt() }
-    val lastNums = mutableListOf(values.last().toLong())
-    var diffs = values
-    do {
-        diffs = calcDiffs(diffs)
-        lastNums += diffs.last().toLong()
-    } while (diffs.toSet().size > 1)
-    lastNums.reversed().sum()
+    val values = line.split(" ").map { it.toLong() }
+    generateSequence(values, ::calcDiffs).takeWhile { it.any { it != 0L } }.sumOf { it.last().toLong() }
 }
 
 private fun part2(input: List<String>): Long = input.sumOf { line ->
-    val values = line.split(" ").map { it.toInt() }
-    val firstNums = mutableListOf(values.first().toLong())
-    var diffs = values
-    do {
-        diffs = calcDiffs(diffs)
-        firstNums += diffs.first().toLong()
-    } while (diffs.toSet().size > 1)
-    firstNums.reversed().fold(0L) { acc, num -> num - acc }
+    val values = line.split(" ").map { it.toLong() }
+    generateSequence(values, ::calcDiffs)
+        .takeWhile { it.any { it != 0L } }
+        .toList()
+        .reversed()
+        .fold(0L) { acc, s -> s.first() - acc }
 }
 
-private fun calcDiffs(values: List<Int>): List<Int> = values.zipWithNext { a, b -> b - a }
+private fun calcDiffs(values: List<Long>): List<Long> = values.zipWithNext { a, b -> b - a }
 
