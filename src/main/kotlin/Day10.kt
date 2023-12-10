@@ -43,6 +43,74 @@ fun XY.connected(input: List<String>): List<XY> = when (input[y][x]) {
     else -> emptyList()
 }
 
+private fun part2(input: List<String>): Int {
+    val startY = input.indexOfFirst { 'S' in it }
+    val startX = input[startY].indexOf('S')
+    val start = XY(startX, startY)
+    val loop = mutableSetOf(start)
+    var cur = start.neighbours(input).find { start in it.connected(input) }
+    while (cur != null) {
+        loop += cur
+        cur = cur.connected(input).find { it !in loop }
+    }
+    var counter = 0
+    val inside = HashSet<XY>()
+    for (y in input.indices) {
+        for (x in input[y].indices) {
+            if (XY(x, y) in loop) {
+                continue
+            }
+            var intersectionCount = 0
+            var goUp = false
+            for (ax in (x + 1)..<input[y].length) {
+                if (XY(ax, y) in loop && input[y][ax] != '-') {
+                    val ch = input[y][ax]
+                    when (ch) {
+                        '|' -> intersectionCount++
+                        'L' -> goUp = true
+                        'F' -> goUp = false
+                        '7' -> if (goUp) intersectionCount++
+                        'J' -> if (!goUp) intersectionCount++
+                    }
+                }
+            }
+            if (intersectionCount % 2 == 1) {
+                inside += XY(x, y)
+                counter++
+            }
+        }
+    }
+    debugPrint(input, loop, inside)
+    return counter
+}
 
-private fun part2(input: List<String>): Int = 0
-
+private fun debugPrint(input: List<String>, loop: Set<XY>, inside: Set<XY>) {
+    println()
+    for (y in input.indices) {
+        for (x in input[y].indices) {
+            val xy = XY(x, y)
+            val color = when (xy) {
+                in loop -> ANSI_RED
+                in inside -> ANSI_GREEN
+                else -> ANSI_BLACK
+            }
+            val bgColor = when (xy) {
+                in loop -> ""
+                in inside -> ANSI_GREEN_BACKGROUND
+                else -> ""
+            }
+            val ch = when (input[y][x]) {
+                '|' -> '│'
+                '-' -> '-'
+                'L' -> '└'
+                'J' -> '┘'
+                '7' -> '┐'
+                'F' -> '┌'
+                else -> input[y][x]
+            }
+            print(bgColor + color + ch + ANSI_RESET)
+        }
+        println()
+    }
+    println()
+}
