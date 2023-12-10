@@ -18,10 +18,10 @@ private fun part2(input: List<String>): Int {
 private fun findLoop(input: List<String>): Set<XY> {
     val sy = input.indexOfFirst { 'S' in it }
     val sx = input[sy].indexOf('S')
-    val candidates = listOf(XY(sx - 1, sy), XY(sx + 1, sy), XY(sx, sy - 1), XY(sx, sy + 1))
-        .filter { (x, y) -> y in input.indices && x in input[0].indices }
-    val cur = candidates.find { XY(sx, sy) in it.connected(input) }!!
-    return generateSequence(linkedSetOf(XY(sx, sy), cur)) { set ->
+    val start = XY(sx, sy)
+    val cur = listOf(XY(sx - 1, sy), XY(sx + 1, sy), XY(sx, sy - 1), XY(sx, sy + 1))
+        .find { p -> p.y in input.indices && p.x in input[p.y].indices && start in p.connected(input) }!!
+    return generateSequence(linkedSetOf(start, cur)) { set ->
         if (set.addAll(set.last.connected(input))) set else null
     }.last()
 }
