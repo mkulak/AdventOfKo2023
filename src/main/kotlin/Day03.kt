@@ -53,7 +53,7 @@ private fun part2(input: List<String>): Int {
         for (y in (i - 1)..(i + 1)) {
             for (x in (j - 1)..(j + 1)) {
                 if (y in input.indices && x in input[y].indices && input[y][x] == '*') {
-                    gears += x to y
+                    gears += XY(x, y)
                 }
             }
         }
@@ -73,4 +73,4 @@ private fun part2(input: List<String>): Int {
     return gears2parts.values.filter { it.size == 2 }.sumOf { (a, b) -> a * b }
 }
 
-typealias XY = Pair<Int, Int>
+data class XY(val x: Int, val y: Int)
