@@ -9,7 +9,7 @@ private fun part1(input: String): Int = findLoop(input).first.size / 2
 private fun part2(input: String): Int {
     val (loop, w) = findLoop(input)
     val map = input.indices.map { i -> if (i in loop) input[i] else '.' }.joinToString("")
-    return map.indices.count { i -> map[i] == '.' && map.substring(i + 1, ((i + 1) / w + 1) * w - 1).inter() % 2 == 1 }
+    return map.indices.count { i -> map[i] == '.' && map.drop(i).take(w - (i % w)).inter() % 2 == 1 }
 }
 
 private fun findLoop(input: String): Pair<Set<Int>, Int> {
