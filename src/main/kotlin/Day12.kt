@@ -1,72 +1,87 @@
 fun main() {
     val input = readInput("Day12")
     println(part1(input))
-    println(part2(input))
-//    ???.### 1,1,3
-//    .??..??...?##. 1,1,3
-//    ?#?#?#?#?#?#?#? 1,3,1,6
-    println(matches("#.#.###", listOf(1, 1, 3)))
-    println(matches("##..###", listOf(1, 1, 3)))
+//    println(part2(input))
 }
+private fun part1(input: List<String>) = solve(input, 1)
 
-private fun part1(input: List<String>) = input.sumOf { line ->
+private fun part2(input: List<String>) = solve(input, 5)
+
+private fun solve(input: List<String>, mul: Int) = input.sumOf { line ->
     val (str, nums) = line.split(" ")
-    val groups = str.split(".").filter { it.isNotEmpty() }
-    val clues = nums.split(",").map { it.toInt() }
-    val damagedCount = str.count { it == '#' }
+    val fullStr = List(mul) { str }.joinToString("?")
+    val clues = nums.split(",").map { it.toInt() }.let { list -> (1..mul).flatMap { list } }
+
+    val groups = fullStr.split(".").filter { it.isNotEmpty() }
+    val damagedCount = fullStr.count { it == '#' }
     val totalDamagedCount = clues.sum()
     val toDistribute = totalDamagedCount - damagedCount
-    val freeSpace = str.count { it == '?' }
+    val freeSpace = fullStr.count { it == '?' }
 //    println(toDistribute)
 //    if (str.none { it == '?'} ) return@map 0L
-    if (matches(line, clues)) return@sumOf 1L
+    if (matches(line, clues, false)) return@sumOf 1L
 //    val (sGroups, sClues) = simplify(groups, clues)
 //    if (sGroups.size != groups.size) {
 //        println("$groups $clues -> $sGroups $sClues")
 //        return@map 0L
 //    }
 
-// ???.### 1,1,3
     var counter = 0L
-    val states = ArrayDeque<State>()
+    states.clear()
     states += State("", toDistribute, freeSpace)
     while (states.isNotEmpty()) {
+//        println(states.map { it.current })
         val state = states.removeFirst()
-        if (state.current.length == str.length) {
-            if (/* check clues*/matches(state.current, clues)) counter++
+        if (state.current.length == fullStr.length) {
+            if (matches(state.current, clues, false)) {
+                counter++
+            }
             continue
         }
-        when (val ch = str[state.current.length]) {
+        when (val ch = fullStr[state.current.length]) {
             '.', '#' -> states.addFirst(state.copy(current = state.current + ch))
             '?' -> {
                 if (state.freeSpace > state.toDistribute) {
-                    states.addFirst(State(state.current + '.', state.toDistribute, state.freeSpace - 1))
+                    val next = state.current + '.'
+                    if (matches(next, clues, true)) states.addFirst(State(next, state.toDistribute, state.freeSpace - 1))
                 }
                 if (state.toDistribute > 0) {
-                    states.addFirst(State(state.current + '#', state.toDistribute - 1, state.freeSpace - 1))
+                    val next = state.current + '#'
+                    if (matches(next, clues, true)) states.addFirst(State(next, state.toDistribute - 1, state.freeSpace - 1))
                 }
             }
         }
     }
-    if (counter == 0L) println("ERROR solution not found: $str $clues")
+    println("$line $counter")
+    if (counter == 0L) println("ERROR solution not found: $fullStr $clues")
     counter
 }
 
+val states = ArrayDeque<State>(10_000_000)
+
 data class State(val current: String, val toDistribute: Int, val freeSpace: Int)
 
-//fun simplify(groups: List<String>, clues: List<Int>): Pair<List<String>, List<Int>> {
-//    val sGroups = groups.dropWhile { group -> group.all { it == '#' } }
-//    val sGroups2 = sGroups.dropLastWhile { group -> group.all { it == '#' } }
-//    return sGroups2 to clues.drop(groups.size - sGroups.size).dropLast(sGroups.size - sGroups2.size)//.dropLastWhile { it.first.length == it.second }.unzip()
-//}
+fun matches(line: String, clues: List<Int>, partially: Boolean): Boolean {
+    var i = 0
+    var cur = 0
+    for (ch in line) {
+        if (ch == '#') {
+            cur++
+            if (i >= clues.size || cur > clues[i]) return false
+        } else if (cur > 0) {
+            if (cur != clues[i]) return false
+            i++
+            cur = 0
+        }
+    }
+    return partially || i == clues.size || ((i == clues.size - 1) && clues[i] == cur)
+}
 
-val regex = "#+".toRegex()
-
-fun matches(line: String, clues: List<Int>): Boolean =
-    regex.findAll(line).map { it.value.length }.toList() == clues
-//    groups.size == clues.size && groups.indices.all { groups[it].length == clues[it] }
-
-
-
-private fun part2(input: List<String>): Long = 0
-
+//??????.??#. 2,3 16016
+//??.?###????????? 2,4,4 3515625
+//?????????.??##? 1,2,1,1,5 6480
+//?##?.????.?#?.?#? 3,1,1,2,2 7962624
+//?#?.#?##???? 3,1,4 16
+//??#????#?? 4,4 1950
+//???????#?.??? 2,2 9185277
+//?.???????#? 2,3 252684
