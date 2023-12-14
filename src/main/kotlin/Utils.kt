@@ -2,6 +2,9 @@ fun readInput(name: String): List<String> = readInputAsText(name).lines()
 
 fun readInputAsText(name: String): String = object {}::class.java.getResource("$name.txt")!!.readText()
 
+fun List<String>.transpose(): List<String> =
+    this[0].indices.map { x -> indices.map { y -> this[y][x] }.joinToString("") }
+
 const val ANSI_RESET = "\u001B[0m"
 const val ANSI_BOLD = "\u001B[1m"
 

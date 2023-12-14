@@ -24,6 +24,3 @@ private fun findMirror(lines: List<String>, smudge: Boolean): Int? =
     }
 
 private fun diff(s1: String, s2: String): Int = s1.zip(s2).count { (a, b) -> a != b }
-
-private fun List<String>.transpose(): List<String> =
-    this[0].indices.map { x -> indices.map { y -> this[y][x] }.joinToString("") }
