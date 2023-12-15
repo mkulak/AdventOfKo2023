@@ -1,7 +1,7 @@
 fun main() {
     val input = readInput("Day12")
-    println(part1(input))
-//    println(part2(input))
+    println(part1(input)) // 7732
+    println(part2(input)) // 4500070301581
 }
 private fun part1(input: List<String>) = solve(input, 1)
 
@@ -11,77 +11,43 @@ private fun solve(input: List<String>, mul: Int) = input.sumOf { line ->
     val (str, nums) = line.split(" ")
     val fullStr = List(mul) { str }.joinToString("?")
     val clues = nums.split(",").map { it.toInt() }.let { list -> (1..mul).flatMap { list } }
-
-    val groups = fullStr.split(".").filter { it.isNotEmpty() }
-    val damagedCount = fullStr.count { it == '#' }
-    val totalDamagedCount = clues.sum()
-    val toDistribute = totalDamagedCount - damagedCount
-    val freeSpace = fullStr.count { it == '?' }
-//    println(toDistribute)
-//    if (str.none { it == '?'} ) return@map 0L
-    if (matches(line, clues, false)) return@sumOf 1L
-//    val (sGroups, sClues) = simplify(groups, clues)
-//    if (sGroups.size != groups.size) {
-//        println("$groups $clues -> $sGroups $sClues")
-//        return@map 0L
-//    }
-
-    var counter = 0L
-    states.clear()
-    states += State("", toDistribute, freeSpace)
-    while (states.isNotEmpty()) {
-//        println(states.map { it.current })
-        val state = states.removeFirst()
-        if (state.current.length == fullStr.length) {
-            if (matches(state.current, clues, false)) {
-                counter++
-            }
-            continue
-        }
-        when (val ch = fullStr[state.current.length]) {
-            '.', '#' -> states.addFirst(state.copy(current = state.current + ch))
-            '?' -> {
-                if (state.freeSpace > state.toDistribute) {
-                    val next = state.current + '.'
-                    if (matches(next, clues, true)) states.addFirst(State(next, state.toDistribute, state.freeSpace - 1))
-                }
-                if (state.toDistribute > 0) {
-                    val next = state.current + '#'
-                    if (matches(next, clues, true)) states.addFirst(State(next, state.toDistribute - 1, state.freeSpace - 1))
-                }
-            }
-        }
-    }
-    println("$line $counter")
-    if (counter == 0L) println("ERROR solution not found: $fullStr $clues")
-    counter
+    solveRec(fullStr, clues, GroupState.NotStarted)
 }
 
-val states = ArrayDeque<State>(10_000_000)
+enum class GroupState { NotStarted, Pending, Ended }
 
-data class State(val current: String, val toDistribute: Int, val freeSpace: Int)
+val cache = HashMap<Triple<String, List<Int>, GroupState>, Long>()
 
-fun matches(line: String, clues: List<Int>, partially: Boolean): Boolean {
-    var i = 0
-    var cur = 0
-    for (ch in line) {
-        if (ch == '#') {
-            cur++
-            if (i >= clues.size || cur > clues[i]) return false
-        } else if (cur > 0) {
-            if (cur != clues[i]) return false
-            i++
-            cur = 0
+fun solveRec(line: String, left: List<Int>, state: GroupState): Long {
+    val key = Triple(line, left, state)
+    val answer = cache[key]
+    if (answer != null) return answer
+    if (left.size * 2 - 1 > line.length) return 0
+    if (left.isEmpty()) return if ("#" in line) 0 else 1
+    if (line.isEmpty()) return 0
+    val next = line.substring(1)
+    val res = when (line.first()) {
+        '.' -> {
+            if (state == GroupState.Pending) 0
+            else solveRec(next, left, GroupState.NotStarted)
+        }
+        '#' -> {
+            if (state == GroupState.Ended) 0
+            else if (left[0] > 1) solveRec(next, left.decHead(), GroupState.Pending)
+            else /*left[0] == 1*/ solveRec(next, left.drop(1), GroupState.Ended)
+        }
+        else -> {
+            if (state == GroupState.Pending) {
+                if (left[0] > 1) solveRec(next, left.decHead(), GroupState.Pending)
+                else /*left[0] == 1*/ solveRec(next, left.drop(1), GroupState.Ended)
+            } else if (state == GroupState.Ended) solveRec(next, left, GroupState.NotStarted)
+            else /*state == GroupState.NotStarted*/ solveRec(next, left, GroupState.NotStarted) +
+                if (left[0] > 1) solveRec(next, left.decHead(), GroupState.Pending)
+                else solveRec(next, left.drop(1), GroupState.Ended)
         }
     }
-    return partially || i == clues.size || ((i == clues.size - 1) && clues[i] == cur)
+    cache[key] = res
+    return res
 }
 
-//??????.??#. 2,3 16016
-//??.?###????????? 2,4,4 3515625
-//?????????.??##? 1,2,1,1,5 6480
-//?##?.????.?#?.?#? 3,1,1,2,2 7962624
-//?#?.#?##???? 3,1,4 16
-//??#????#?? 4,4 1950
-//???????#?.??? 2,2 9185277
-//?.???????#? 2,3 252684
+private fun List<Int>.decHead(): List<Int> = List(size) { this[it] - if (it == 0) 1 else 0 }
