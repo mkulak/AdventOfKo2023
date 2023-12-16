@@ -15,15 +15,12 @@ private fun solve(input: List<String>, mul: Int) = input.sumOf { line ->
     val cache = HashMap<Pair<Int, List<Int>>, Long>()
     fun solveRec(i: Int, left: List<Int>): Long = cache.getOrPut(i to left) {
         when {
-            left.isEmpty() || left == listOf(0) -> if (s.indexOf('#', i) == -1) 1 else 0
+            left == listOf(0) -> if (s.indexOf('#', i) == -1) 1 else 0
             i == s.length -> 0
-            s[i] == '.' && left[0] == 0 -> solveRec(i + 1, left.drop(1))
-            s[i] == '.' && left[0] < clues[clues.size - left.size] -> 0
+            left[0] == 0 -> if (s[i] == '#') 0 else solveRec(i + 1, left.drop(1))
+            left[0] < clues[clues.size - left.size] -> if (s[i] == '.') 0 else solveRec(i + 1, left.decHead())
             s[i] == '.' -> solveRec(i + 1, left)
-            s[i] == '#' && left[0] == 0 -> 0
             s[i] == '#' -> solveRec(i + 1, left.decHead())
-            left[0] == 0 -> solveRec(i + 1, left.drop(1))
-            left[0] < clues[clues.size - left.size] -> solveRec(i + 1, left.decHead())
             else -> solveRec(i + 1, left) + solveRec(i + 1, left.decHead())
         }
     }
