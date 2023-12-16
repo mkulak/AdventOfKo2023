@@ -27,7 +27,7 @@ private fun part2(input: List<String>): Int {
     return score(arr)
 }
 
-fun shift(arr: Array<CharArray>, dir: Dir) = when (dir) {
+private fun shift(arr: Array<CharArray>, dir: Dir) = when (dir) {
     Dir.North, Dir.South ->
         arr[0].indices.forEach { x ->
             var emptySpace = -1
@@ -66,10 +66,10 @@ fun shift(arr: Array<CharArray>, dir: Dir) = when (dir) {
         }
 }
 
-fun score(s: Array<CharArray>): Int =
+private fun score(s: Array<CharArray>): Int =
     s.foldIndexed(0) { i, acc, line -> acc + line.count { it == 'O' } * (s.size - i) }
 
-enum class Dir { North, West, South, East }
+private enum class Dir { North, West, South, East }
 
 private fun Array<CharArray>.hash(): Long =
     fold(1L) { acc, arr -> acc * 31 + arr.contentHashCode() }
