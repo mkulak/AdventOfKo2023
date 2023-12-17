@@ -6,7 +6,7 @@ fun main() {
 
 private fun part1(input: List<String>): Int {
     val arr = Array(input.size) { input[it].toCharArray() }
-    shift(arr, Dir.North)
+    shift(arr, Dir.Up)
     return score(arr)
 }
 
@@ -28,11 +28,11 @@ private fun part2(input: List<String>): Int {
 }
 
 private fun shift(arr: Array<CharArray>, dir: Dir) = when (dir) {
-    Dir.North, Dir.South ->
+    Dir.Up, Dir.Down ->
         arr[0].indices.forEach { x ->
             var emptySpace = -1
-            val range = if (dir == Dir.North) arr.indices else arr.indices.reversed()
-            val next = if (dir == Dir.North) 1 else -1
+            val range = if (dir == Dir.Up) arr.indices else arr.indices.reversed()
+            val next = if (dir == Dir.Up) 1 else -1
             range.forEach { y ->
                 when {
                     arr[y][x] == '#' -> emptySpace = -1
@@ -46,11 +46,11 @@ private fun shift(arr: Array<CharArray>, dir: Dir) = when (dir) {
             }
         }
 
-    Dir.West, Dir.East ->
+    Dir.Left, Dir.Right ->
         arr.indices.forEach { y ->
             var emptySpace = -1
-            val range = if (dir == Dir.West) arr.indices else arr.indices.reversed()
-            val next = if (dir == Dir.West) 1 else -1
+            val range = if (dir == Dir.Left) arr.indices else arr.indices.reversed()
+            val next = if (dir == Dir.Left) 1 else -1
             range.forEach { x ->
                 val ch = arr[y][x]
                 when {
@@ -66,10 +66,9 @@ private fun shift(arr: Array<CharArray>, dir: Dir) = when (dir) {
         }
 }
 
+
 private fun score(s: Array<CharArray>): Int =
     s.foldIndexed(0) { i, acc, line -> acc + line.count { it == 'O' } * (s.size - i) }
-
-private enum class Dir { North, West, South, East }
 
 private fun Array<CharArray>.hash(): Long =
     fold(1L) { acc, arr -> acc * 31 + arr.contentHashCode() }

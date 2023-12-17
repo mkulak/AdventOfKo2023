@@ -73,4 +73,3 @@ private fun part2(input: List<String>): Int {
     return gears2parts.values.filter { it.size == 2 }.sumOf { (a, b) -> a * b }
 }
 
-data class XY(val x: Int, val y: Int)

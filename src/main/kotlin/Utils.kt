@@ -2,8 +2,17 @@ fun readInput(name: String): List<String> = readInputAsText(name).lines()
 
 fun readInputAsText(name: String): String = object {}::class.java.getResource("$name.txt")!!.readText()
 
-fun List<String>.transpose(): List<String> =
-    this[0].indices.map { x -> indices.map { y -> this[y][x] }.joinToString("") }
+enum class Dir(val dx: Int, val dy: Int) {
+    Up(0, -1), Left(-1, 0), Down(0, 1), Right(1, 0);
+
+    val next: Dir get() = entries[(ordinal + 1) % entries.size]
+    val prev: Dir get() = entries[(ordinal - 1 + entries.size) % entries.size]
+}
+
+data class XY(val x: Int, val y: Int) {
+    operator fun plus(dir: Dir) = XY(x + dir.dx, y + dir.dy)
+    override fun toString(): String = "[$x, $y]"
+}
 
 const val ANSI_RESET = "\u001B[0m"
 const val ANSI_BOLD = "\u001B[1m"
