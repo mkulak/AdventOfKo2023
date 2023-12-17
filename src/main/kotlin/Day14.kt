@@ -66,7 +66,6 @@ private fun shift(arr: Array<CharArray>, dir: Dir) = when (dir) {
         }
 }
 
-
 private fun score(s: Array<CharArray>): Int =
     s.foldIndexed(0) { i, acc, line -> acc + line.count { it == 'O' } * (s.size - i) }
 

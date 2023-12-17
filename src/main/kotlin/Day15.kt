@@ -12,7 +12,7 @@ private fun part2(input: String): Int =
         if (foc == null) box.remove(label) else box[label] = foc
         boxes
     }.mapIndexed { i, box ->
-        box.entries.mapIndexed { j, (_, foc) ->  (i + 1) * (j + 1) * foc }.sum()
+        box.entries.mapIndexed { j, (_, foc) -> (i + 1) * (j + 1) * foc }.sum()
     }.sum()
 
 private fun parse(s: String) =
