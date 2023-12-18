@@ -22,8 +22,8 @@ private fun List<String>.traceLight(prevX: Int, prevY: Int, dir: Dir, cache: Cac
     if (!cache.add(key)) return
     when (this[y][x]) {
         '.' -> traceLight(x, y, dir, cache)
-        '\\' -> traceLight(x, y, findDir(dir.dy, dir.dx), cache)
-        '/' -> traceLight(x, y, findDir(-dir.dy, -dir.dx), cache)
+        '\\' -> traceLight(x, y, Dir.find(dir.dy, dir.dx), cache)
+        '/' -> traceLight(x, y, Dir.find(-dir.dy, -dir.dx), cache)
         '-' -> if (dir.dy == 0) traceLight(x, y, dir, cache) else {
             traceLight(x, y, Dir.Left, cache)
             traceLight(x, y, Dir.Right, cache)
@@ -35,8 +35,6 @@ private fun List<String>.traceLight(prevX: Int, prevY: Int, dir: Dir, cache: Cac
         }
     }
 }
-
-private fun findDir(dx: Int, dy: Int) = Dir.entries.find { it.dx == dx && it.dy == dy }!!
+//10888 too low
 
 private typealias Cache = HashSet<Pair<Int, Dir>>
-

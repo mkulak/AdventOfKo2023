@@ -7,10 +7,15 @@ enum class Dir(val dx: Int, val dy: Int) {
 
     val next: Dir get() = entries[(ordinal + 1) % entries.size]
     val prev: Dir get() = entries[(ordinal - 1 + entries.size) % entries.size]
+    val xy: XY get() = XY(dx, dy)
+
+    companion object {
+        fun find(dx: Int, dy: Int): Dir = Dir.entries.first { it.dx == dx && it.dy == dy }
+    }
 }
 
 data class XY(val x: Int, val y: Int) {
-    operator fun plus(dir: Dir) = XY(x + dir.dx, y + dir.dy)
+    operator fun plus(xy: XY) = XY(x + xy.x, y + xy.y)
     override fun toString(): String = "[$x, $y]"
 }
 

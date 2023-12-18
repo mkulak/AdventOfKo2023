@@ -19,7 +19,7 @@ private fun solve(input: List<String>, minSteps: Int, maxSteps: Int): Int {
         val recordKey = RecordKey(cur.pos, cur.dir, cur.steps)
         if (visited.getValue(recordKey) < cur.cost) continue
         listOf(cur.dir, cur.dir.next, cur.dir.prev).filter { it.isValid(cur, minSteps, maxSteps) }.forEach { newDir ->
-            val newPos = cur.pos + newDir
+            val newPos = cur.pos + newDir.xy
             if (newPos.x in costs[0].indices && newPos.y in costs.indices) {
                 val newSteps = if (newDir == cur.dir) cur.steps + 1 else 1
                 val newCost = cur.cost + costs[newPos.y][newPos.x]
