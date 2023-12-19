@@ -1,6 +1,3 @@
-import kotlin.math.max
-import kotlin.math.min
-
 fun main() {
     val input = readInputAsText("Day19")
     println(part1(input)) // 425811
@@ -21,8 +18,9 @@ private fun part2(input: String): Long {
 
 fun parsePipeline(s: String) = s.substringBefore("{") to s.substringAfter("{").dropLast(1).split(",").map { ruleStr ->
     if (":" in ruleStr) {
-        val v = ruleStr.substringBefore(":").drop(2).toInt()
-        Rule(ruleStr.substringAfter(":"), if (ruleStr[1] == '>') Greater(ruleStr[0], v) else Less(ruleStr[0], v))
+        val isLess = ruleStr[1] == '<'
+        val v = ruleStr.substringBefore(":").drop(2).toInt() + if (isLess) 0 else 1
+        Rule(ruleStr.substringAfter(":"), Compare(ruleStr[0], v, isLess))
     } else Rule(ruleStr, True)
 }
 
@@ -44,49 +42,37 @@ private fun Pipeline.countAccepted(ranges: PartRanges, id: String): Long =
         "R" -> 0
         else -> getValue(id).fold(0L to ranges) { (count, lastRange), rule ->
             val (matched, nonMatched) = rule.predicate.split(lastRange)
-            val inc = if (matched.size() > 0) countAccepted(matched, rule.next) else 0
+            val inc = if (matched.empty()) 0 else countAccepted(matched, rule.next)
             (count + inc) to nonMatched
         }.first
     }
 
-data class Rule(val next: String, val predicate: PartPredicate)
-
-sealed interface PartPredicate
-data class Less(val field: Char, val value: Int) : PartPredicate
-data class Greater(val field: Char, val value: Int) : PartPredicate
-data object True : PartPredicate
-
 operator fun PartPredicate.invoke(part: Part): Boolean = when (this) {
-    is Less -> part.getValue(field) < value
-    is Greater -> part.getValue(field) > value
     is True -> true
+    is Compare -> if (isLess) part.getValue(field) < value else part.getValue(field) >= value
 }
 
 fun PartPredicate.split(ranges: PartRanges): Pair<PartRanges, PartRanges> = when (this) {
     is True -> ranges to "xmas".associateWith { 0..0 }
-    is Less -> {
+    is Compare -> {
         val range = ranges.getValue(field)
-        val less = range.first..min(range.last, value - 1)
-        val more = max(range.first, value)..range.last
-        val matched = ranges + (field to less)
-        val nonMatched = ranges + (field to more)
-        matched to nonMatched
-    }
-    is Greater -> {
-        val range = ranges.getValue(field)
-        val less = range.first..min(range.last, value)
-        val more = max(range.first, value + 1)..range.last
-        val matched = ranges + (field to more)
-        val nonMatched = ranges + (field to less)
-        matched to nonMatched
+        val less = range.first..range.last.coerceAtMost(value - 1)
+        val more = range.first.coerceAtLeast(value)..range.last
+        val rangesWithLess = ranges + (field to less)
+        val rangesWithMore = ranges + (field to more)
+        if (isLess) rangesWithLess to rangesWithMore else rangesWithMore to rangesWithLess
     }
 }
+
+private fun IntRange.size(): Int = last - first + 1
+private fun PartRanges.empty(): Boolean = values.all { it.size() == 0 }
+
+data class Rule(val next: String, val predicate: PartPredicate)
+
+sealed interface PartPredicate
+data class Compare(val field: Char, val value: Int, val isLess: Boolean) : PartPredicate
+data object True : PartPredicate
 
 typealias Part = Map<Char, Int>
 typealias PartRanges = Map<Char, IntRange>
 typealias Pipeline = Map<String, List<Rule>>
-
-private fun IntRange.size(): Int = last - first + 1
-private fun PartRanges.size(): Int = values.sumOf { it.size() }
-
-
