@@ -64,4 +64,3 @@ private val LongRange.exlusive: LongRange get() = (first + 1)..(last - 1)
 
 private data class XYL(val x: Long, val y: Long)
 private operator fun XYL.plus(xy: XYL): XYL = XYL(x + xy.x, y + xy.y)
-

@@ -35,6 +35,5 @@ private fun List<String>.traceLight(prevX: Int, prevY: Int, dir: Dir, cache: Cac
         }
     }
 }
-//10888 too low
 
 private typealias Cache = HashSet<Pair<Int, Dir>>
