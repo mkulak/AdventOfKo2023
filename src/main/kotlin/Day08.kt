@@ -26,7 +26,7 @@ private tailrec fun Graph.findZ(cur: String, steps: String, pos: Long = 0): Long
     return findZ(if (instruction == 'L') left else right, steps, pos + 1)
 }
 
-private fun lcm(a: Long, b: Long): Long = a * b / gcd(a, b)
+fun lcm(a: Long, b: Long): Long = a * b / gcd(a, b)
 
 private tailrec fun gcd(a: Long, b: Long): Long {
     val min = min(a, b)
