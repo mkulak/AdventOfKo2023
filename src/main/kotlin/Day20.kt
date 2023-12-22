@@ -27,21 +27,22 @@ private fun part1(input: List<String>): Long {
 private fun part2(input: List<String>): Long {
     val devices = parseDevices(input)
     var count = 0L
-    while (true) {
-        count++
-        var current = listOf(Triple("button", "broadcaster", Pulse.Low))
-        while (current.isNotEmpty()) {
-            current = current.flatMap { (from, to, pulse) ->
-                if (pulse == Pulse.Low && to == "rx") return@part2 count
-                val device = devices.getValue(to)
-                val newPulse = device.accept(pulse, from)
-                if (newPulse != null) {
-                    device.out.map { newTo -> Triple(to, newTo, newPulse) }
-                } else emptyList()
-            }
-        }
-        if (count % 10_000L == 0L) println(count)
-    }
+//    while (true) {
+//        count++
+//        var current = listOf(Triple("button", "broadcaster", Pulse.Low))
+//        while (current.isNotEmpty()) {
+//            current = current.flatMap { (from, to, pulse) ->
+//                if (pulse == Pulse.Low && to == "rx") return@part2 count
+//                val device = devices.getValue(to)
+//                val newPulse = device.accept(pulse, from)
+//                if (newPulse != null) {
+//                    device.out.map { newTo -> Triple(to, newTo, newPulse) }
+//                } else emptyList()
+//            }
+//        }
+//        if (count % 10_000L == 0L) println(count)
+//    }
+    return 0
 }
 
 //50470000 still not found
