@@ -47,7 +47,7 @@ private fun debugPrint(input: List<String>, reached: Map<XY, Int>) {
 private data class S(val pos: XY, val steps: Int)
 
 private fun part2(input: List<String>): Int {
-//    val stepsLimit = 26501365
+//    val stepsLimit = 26501365 5*11*481843
     val stepsLimit = 6
     val startY = input.indices.first { "S" in input[it] }
     val startX = input[startY].indexOf("S")
