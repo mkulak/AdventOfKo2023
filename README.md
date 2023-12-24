@@ -20,4 +20,4 @@ and did several runs to calculate different periods. No clue how to solve it in 
 
 Part 2 of days 21, 23 and 24 is beyond my comprehension. I have 0 clue how to solve it.  
 
-
+![](pics/main.png)
