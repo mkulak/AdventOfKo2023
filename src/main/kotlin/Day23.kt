@@ -6,12 +6,8 @@ import readInput
 
 fun main() {
     val input = readInput("Day23")
-    println(part1(input)) // 2218
+//    println(part1(input)) // 2218
     println(part2(input))
-}
-
-private fun part2(input: List<String>): Int {
-    return 0
 }
 
 private fun debugPrint(input: List<String>, reached: Map<XY, Int>) {
@@ -27,15 +23,13 @@ private fun debugPrint(input: List<String>, reached: Map<XY, Int>) {
     }
 }
 
-private data class State(val pos: XY, val steps: Int, val visited: Set<XY>)
+private data class State(val pos: XY, val steps: Int, val visited: Set<XY>, val dir: Dir, val prev: State?)
 
 private fun part1(input: List<String>): Int {
     val start = XY(input.first().indexOf("."), 0)
     val finish = XY(input.last().indexOf("."), input.lastIndex)
     val states = ArrayDeque<State>()
-    states += State(start, 0, setOf(start))
-    val reached = HashMap<XY, IntArray>()
-    reached[start] = IntArray(4)
+    states += State(start, 0, setOf(start), Dir.Down, null)
     var maxSteps = 0
     while (states.isNotEmpty()) {
         val cur = states.removeFirst()
@@ -55,12 +49,43 @@ private fun part1(input: List<String>): Int {
             val newPos = cur.pos + dir.xy
             val newSteps = cur.steps + 1
             if (newPos !in cur.visited && newPos.x in input[0].indices && newPos.y in input.indices && input[newPos.y][newPos.x] != '#') {
-//                val curMax = reached.getOrPut(newPos) { IntArray(4) }
-//                val oldSteps = curMax[dir.ordinal]
-//                if (oldSteps < newSteps) {
-//                    curMax[dir.ordinal] = newSteps
-                    states += State(newPos, newSteps, cur.visited + newPos)
-//                }
+                states += State(newPos, newSteps, cur.visited + newPos, dir, cur)
+            }
+        }
+    }
+    return maxSteps
+}
+
+private fun part2(input: List<String>): Int {
+    val start = XY(input.first().indexOf("."), 0)
+    val finish = XY(input.last().indexOf("."), input.lastIndex)
+    val states = ArrayDeque<State>()
+    states += State(start, 0, setOf(start), Dir.Down, null)
+    val reached = HashMap<XY, IntArray>()
+    reached[start] = IntArray(4)
+    var maxSteps = 0
+    while (states.isNotEmpty()) {
+        val cur = states.removeFirst()
+        if (cur.pos == finish) {
+            println("Reached finish in ${cur.steps}")
+            generateSequence(cur) { cur.prev }.forEach {
+                val curMax = reached.getOrPut(it.pos) { IntArray(4) }
+                if (it.steps > curMax[it.dir.ordinal]) {
+                    curMax[it.dir.ordinal] = it.steps
+                }
+            }
+            if (maxSteps < cur.steps) maxSteps = cur.steps
+            continue
+        }
+        Dir.entries.forEach { dir ->
+            val newPos = cur.pos + dir.xy
+            val newSteps = cur.steps + 1
+            if (newPos !in cur.visited && newPos.x in input[0].indices && newPos.y in input.indices && input[newPos.y][newPos.x] != '#') {
+                val curMax = reached.getOrPut(newPos) { IntArray(4) }
+                val oldSteps = curMax[dir.ordinal]
+                if (oldSteps < newSteps) {
+                    states.addFirst(State(newPos, newSteps, cur.visited + newPos, dir, cur))
+                }
             }
         }
     }
