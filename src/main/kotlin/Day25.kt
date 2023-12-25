@@ -1,5 +1,7 @@
 package day25
+
 import readInput
+import kotlin.time.TimeSource
 
 fun main() {
     val input = readInput("Day25")
@@ -15,28 +17,69 @@ private fun part1(input: List<String>): Int {
         graph.getOrPut(a, ::ArrayList) += bs
         bs.forEach {
             graph.getOrPut(it, ::ArrayList) += a
-            edges += a to it
+            edges += edge(a, it)
         }
     }
 
 //    graph.forEach { v, connected ->
 //        println("$v: ${connected.joinToString(" ")}")
 //    }
+    println("size: ${edges.size}, estimated steps: ${edges.size.toLong() * edges.size * edges.size / 8}")
+    var count = 0
+    val mark = TimeSource.Monotonic.markNow()
     edges.indices.forEach { i ->
-        (i+1..edges.lastIndex).forEach { j ->
-            (j+1..edges.lastIndex).forEach { k ->
+        (i + 1..edges.lastIndex).forEach { j ->
+            (j + 1..edges.lastIndex).forEach { k ->
                 val a = edges[i]
                 val b = edges[j]
                 val c = edges[k]
                 val exclude = listOf(a, b, c)
-                val newGraph = graph.deepCopyWithout(exclude)
-                val parts = newGraph.connectedParts()
+//                val parts = graph.connectedParts(exclude)
+//                if (parts.size == 2) return parts[0] * parts[1]
+                val res = graph.connectedPartsSize(exclude)
+                if (res != 0) return res
 //                println("removed $exclude parts: $parts")
-                if (parts.size == 2) return parts[0] * parts[1]
+                count++
+                if (count % 100_000 == 0) {
+                    println("$count in ${mark.elapsedNow()}")
+                }
             }
         }
     }
     return -1
+}
+
+private fun edge(a: String, b: String) = if (a < b) a to b else b to a
+
+private fun Graph.connectedParts(exclude: List<Pair<String, String>>): List<Int> {
+    val visited = HashSet<String>()
+    val res = ArrayList<Int>()
+    keys.forEach { key ->
+        val oldSize = visited.size
+        traverse(key, exclude, visited)
+        val diff = visited.size - oldSize
+        if (diff > 0) res += diff
+    }
+    return res
+}
+
+private fun Graph.connectedPartsSize(exclude: List<Pair<String, String>>): Int {
+    val visited = HashSet<String>()
+    keys.forEach { key ->
+        val oldSize = visited.size
+        traverse(key, exclude, visited)
+        val diff = visited.size - oldSize
+        if (oldSize > 0 && diff > 0) return oldSize * diff
+    }
+    return 0
+}
+
+fun Graph.traverse(v: String, exclude: List<Pair<String, String>>, visited: HashSet<String>) {
+    if (visited.add(v)) {
+        this[v]!!.forEach {
+            if (edge(v, it) !in exclude) traverse(it, exclude, visited)
+        }
+    }
 }
 
 private fun Graph.deepCopyWithout(exclude: List<Pair<String, String>>): Graph {
@@ -45,27 +88,6 @@ private fun Graph.deepCopyWithout(exclude: List<Pair<String, String>>): Graph {
     exclude.forEach { (a, b) ->
         res[a]?.remove(b)
         res[b]?.remove(a)
-    }
-    return res
-}
-
-private fun Graph.connectedParts(): List<Int> {
-    val visited = HashSet<String>()
-    val res = ArrayList<Int>()
-    val buf = ArrayDeque<String>()
-    keys.forEach { key ->
-        if (key !in visited) {
-            buf += key
-            var count = 0
-            while (buf.isNotEmpty()) {
-                val k = buf.removeFirst()
-                if (visited.add(k)) {
-                    count++
-                    buf += this[k]!!
-                }
-            }
-            res += count
-        }
     }
     return res
 }
